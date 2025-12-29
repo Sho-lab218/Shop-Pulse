@@ -1,0 +1,78 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  passwordHash  String    @map("password_hash")
+  role          String    @default("customer") // "customer" or "admin"
+  createdAt     DateTime  @default(now()) @map("created_at")
+  orders        Order[]
+  events        Event[]
+
+  @@map("users")
+}
+
+model Product {
+  id                String       @id @default(cuid())
+  name              String
+  description       String?
+  price             Float
+  category          String
+  imageUrl          String?      @map("image_url")
+  stockQty          Int          @default(0) @map("stock_qty")
+  lowStockThreshold Int          @default(10) @map("low_stock_threshold")
+  createdAt         DateTime     @default(now()) @map("created_at")
+  orderItems        OrderItem[]
+  events            Event[]
+
+  @@map("products")
+}
+
+model Order {
+  id           String      @id @default(cuid())
+  userId       String      @map("user_id")
+  total        Float
+  status       String      @default("processing") // "processing", "shipped", "delivered", "cancelled"
+  shippingInfo String?     @map("shipping_info") // JSON string
+  createdAt    DateTime    @default(now()) @map("created_at")
+  user         User        @relation(fields: [userId], references: [id])
+  items        OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id              String   @id @default(cuid())
+  orderId         String   @map("order_id")
+  productId       String   @map("product_id")
+  qty             Int
+  priceAtPurchase Float    @map("price_at_purchase")
+  order           Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product         Product  @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Event {
+  id        String   @id @default(cuid())
+  userId    String?  @map("user_id")
+  productId String?  @map("product_id")
+  type      String   // "product_view", "add_to_cart", "checkout_started", "checkout_completed"
+  createdAt DateTime @default(now()) @map("created_at")
+  user      User?    @relation(fields: [userId], references: [id])
+  product   Product? @relation(fields: [productId], references: [id])
+
+  @@map("events")
+}
+

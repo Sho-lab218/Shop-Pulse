@@ -1,0 +1,12 @@
+# Place your product images here
+# 
+# Naming convention:
+# - "Whole Milk" product → whole-milk.jpg
+# - "Chicken Breast" product → chicken-breast.jpg
+# - "Bananas" product → bananas.jpg
+#
+# Convert product names to:
+# - lowercase
+# - spaces to dashes
+# - remove special characters
+
